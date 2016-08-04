@@ -3,10 +3,17 @@
 
 #include "motionPlanning.h"
 
-
+// a few empty strings for later use...
+std::string base_footprint;
+std::string cmd_vel;
+std::string odom;
 
 int main(int argc, char **argv)
-{				
+{
+	// assign proper names for robot base, command velocity, and odom topic
+	base_footprint = "base_footprint";		// a name for robot's coordinate
+	odom = "odom";							// a name for world's coordinate
+	cmd_vel = "cmd_vel";					
 	srand( time(0));
 
 	// initialize as a ROS program

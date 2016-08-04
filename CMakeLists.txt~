@@ -142,8 +142,7 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(rrt_youbot_node 	
-	src/rrt_youbot_node.cpp
-	src/motionPlanning.cpp)
+	src/rrt_youbot_node.cpp)
 
 
 ## Add cmake target dependencies of the executable

@@ -984,9 +984,10 @@ std::vector<Points3D> motionPlanning::simpleRRT1(std::vector<Points3D> q0, std::
     const double n_sample = 10;
     unsigned int max_iter = 60000;
     bool exit = false;
-    int **graph;
+    int **graph = NULL;
     
-   
+    int tmp_sz1 = Vt.size()+1;
+    int tmp_sz2 = 0;
     int min_idx = -1;
 	
 	// initialize RRT
@@ -1067,27 +1068,43 @@ std::vector<Points3D> motionPlanning::simpleRRT1(std::vector<Points3D> q0, std::
 		// check continuous collision between q_new and the closest point on RRT
 		if (!contcollisionCheck(Vt_tmp,q_new, n_sample))
 		{
-
-			int ** tmp = graph;
-			graph = new int*[Vt.size()];
-			for (int i1 = 0; i1 < Vt.size(); ++i1){
-				graph[i] = new int[Vt.size()];
-			}
-			for (int i2 = 0; i2 < Vt.size(); ++i2){
-				for (int j1 = 0; j1 < Vt.size(); ++j1){
-					graph[i2][j1] = tmp[i2][j1];
+			if (!(graph == NULL))
+			{
+				//std::cout << "debug" << " " << tmp_sz1 << std::endl;
+				//tmp = graph;
+				int **tmp = graph;
+				graph = new int*[Vt.size()+1];
+				
+				for (int i1 = 0; i1 < Vt.size()+1; i1++){
+					graph[i1] = new int[Vt.size()+1];
 				}
-			}
-			for (int j2 = 0;j2< Vt.size(); ++j2){
-				delete[] tmp[j2];
-			}
-			delete[] tmp;
+				for (int z1 = 0; z1 < tmp_sz1; z1++){
+					for (int z2 = 0; z2 < tmp_sz1; z2++){
+						//std::cout << "debug" << std::endl;
+						graph[z1][z2] = tmp[z1][z2];
+					}
+				}
 				
 
+				for (int z3 = 0;z3 < tmp_sz1; ++z3){
+					delete[] tmp[z3];
+				}			
+				delete[] tmp;
+			}
+			else
+			{
+				graph = new int*[Vt.size()+1];
+				for (int i1 = 0; i1 < Vt.size()+1; ++i1){
+					graph[i1] = new int[Vt.size()+1];
+				}				
+			}
+			//std::cout << "debug" << std::endl;
 			graph[min_idx][Vt.size()] = 1;
+			tmp_sz1 = Vt.size()+1;
+			
 			
 			Vt.push_back(Points3D(q_new[0]._x,q_new[0]._y,q_new[0]._z));
-
+			
 			std::vector<Points3D> comp1,comp2;
 			comp1.push_back(Points3D(q_new[0]._x, q_new[0]._y, 0));
 			comp2.push_back(Points3D(q1[0]._x, q1[0]._y, 0));
@@ -1095,7 +1112,24 @@ std::vector<Points3D> motionPlanning::simpleRRT1(std::vector<Points3D> q0, std::
 			if ((distPointPoint(comp1,comp2) < step_size) && (std::abs(atan2(sin(q1[0]._z- q_new[0]._z), cos(q1[0]._z- q_new[0]._z)))< step_size_th) 
 			&& !contcollisionCheck(q_new,q1, n_sample))
 			{
+
+				int **tmp1 = graph;
+				graph = new int*[Vt.size()+1];
+				for (int i1 = 0; i1 < Vt.size()+1; i1++){
+					graph[i1] = new int[Vt.size()+1];
+				}
+				for (int z1 = 0; z1 < tmp_sz1; z1++){
+					for (int z2 = 0; z2 < tmp_sz1; z2++){
+						graph[z1][z2] = tmp1[z1][z2];
+					}
+				}
+				for (int z3 = 0;z3 < tmp_sz1; z3++){
+					delete[] tmp1[z3];
+				}			
+				delete[] tmp1;
+				
 				graph[Vt.size()-1][Vt.size()] = 1;
+				tmp_sz1 = Vt.size()+1;
 				Vt.push_back(Points3D(q1[0]._x,q1[0]._y,q1[0]._z));
 				true_exit = true;
 			}
@@ -1121,15 +1155,18 @@ std::vector<Points3D> motionPlanning::simpleRRT1(std::vector<Points3D> q0, std::
 	{
 		std::cout << "Collision-free path was found in RRT with " << i << " samples!" << std::endl;
 	}
-
 	
+	for (int i = 0; i < Vt.size(); i++){
+		for (int j = 0; j < Vt.size(); j++){
+			std::cout << graph[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+
 	
 	// use Dijkstra's algorithm to find the shortest path on RRT
 	std::vector<int> path=dijkstra(graph, 0, Vt.size()-1,Vt.size());
-	for (int i = 0; i < Vt.size(); ++i){
-		delete [] graph[i];
-		}
-	delete[] graph;
+
 	std::vector<Points3D> Vt_new;
 	
 	for (size_t i = 0 ; i < path.size(); i++){

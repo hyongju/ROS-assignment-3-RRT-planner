@@ -178,6 +178,8 @@ class motionPlanning
 		
 		// youbot's origin w.r.t. "odom"
 		tf::Stamped<tf::Pose> tf_yb_origin;
+		
+		
 		       
 };
 

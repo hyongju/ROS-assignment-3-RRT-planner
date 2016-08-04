@@ -178,6 +178,13 @@ class motionPlanning
 		
 		// youbot's origin w.r.t. "odom"
 		tf::Stamped<tf::Pose> tf_yb_origin;
+		
+		// a few empty strings for later use...
+		std::string base_footprint;
+		std::string cmd_vel;
+		std::string odom;
+		
+		
 		       
 };
 

@@ -5,6 +5,12 @@
   <arg name="init_pos_x" default="0.0"/>
   <arg name="init_pos_y" default="0.0"/>
   <arg name="init_pos_z" default="0.0"/>
+  <arg name="arm_joint_1_pos" default="arm_joint_1 2.95"/>
+  <arg name="arm_joint_2_pos" default="arm_joint_2 1.13"/>
+  <arg name="arm_joint_3_pos" default="arm_joint_3 -2.55"/>
+  <arg name="arm_joint_4_pos" default="arm_joint_4 1.79"/>
+  <arg name="arm_joint_5_pos" default="arm_joint_5 2.879"/>
+
 
   <!-- launch world -->
 
@@ -37,6 +43,11 @@
           -x $(arg init_pos_x)
           -y $(arg init_pos_y)
           -z $(arg init_pos_z)
+          -J $(arg arm_joint_1_pos)
+          -J $(arg arm_joint_2_pos)
+          -J $(arg arm_joint_3_pos)
+          -J $(arg arm_joint_4_pos)                                        
+          -J $(arg arm_joint_5_pos)          
           -model youbot">
   </node>
 
@@ -50,6 +61,6 @@
     <param name="publish_frequency" type="double" value="100.0" />
   </node>
 
-<!-- <node name="rviz" pkg="rviz" type="rviz" args="-d youbot.rviz" /> --> 
+<!-- <node name="rviz" pkg="rviz" type="rviz" args="-d youbot_rviz.rviz" /> --> 
 
 </launch>

@@ -55,8 +55,6 @@ std::string base_footprint;
 std::string cmd_vel;
 std::string odom;
 
-//int graph[VERTEX][VERTEX];
-//int graph2[VERTEX][VERTEX];
 
 // 2-tuple (x, y)
 struct Points2D {
@@ -986,19 +984,8 @@ std::vector<Points3D> motionPlanning::simpleRRT1(std::vector<Points3D> q0, std::
     bool exit = false;
     int **graph = NULL;
     
-    int tmp_sz1 = Vt.size()+1;
-    int tmp_sz2 = 0;
+    int grh_sz = 0;
     int min_idx = -1;
-	
-	// initialize RRT
-	/*
-	for (size_t i = 0; i< VERTEX; i++){
-		for (size_t j = 0; j< VERTEX; j++){
-			graph[i][j]=0;
-		}
-	}
-	*/
-	
 	
     bool true_exit = false;
 	size_t i = 0;
@@ -1061,46 +1048,50 @@ std::vector<Points3D> motionPlanning::simpleRRT1(std::vector<Points3D> q0, std::
 		q_new.push_back(Points3D(q_new_x,q_new_y,q_new_z));
 
 		
-
-
-
-		
 		// check continuous collision between q_new and the closest point on RRT
 		if (!contcollisionCheck(Vt_tmp,q_new, n_sample))
-		{
+		{	
+			////////////////////////////////////////////////////////
 			if (!(graph == NULL))
 			{
 				//std::cout << "debug" << " " << tmp_sz1 << std::endl;
 				//tmp = graph;
-				int **tmp = graph;
-				graph = new int*[Vt.size()+1];
+				
+				int **tmp = graph; // temporary place holder for previous graph
+				
+				// initialize new graph with expanded size
+				graph = new int*[Vt.size()+1] ();
 				
 				for (int i1 = 0; i1 < Vt.size()+1; i1++){
-					graph[i1] = new int[Vt.size()+1];
+					graph[i1] = new int[Vt.size()+1] ();
 				}
-				for (int z1 = 0; z1 < tmp_sz1; z1++){
-					for (int z2 = 0; z2 < tmp_sz1; z2++){
+				
+				// copy tmp -> graph
+				for (int z1 = 0; z1 < grh_sz; z1++){
+					for (int z2 = 0; z2 < grh_sz; z2++){
 						//std::cout << "debug" << std::endl;
 						graph[z1][z2] = tmp[z1][z2];
 					}
 				}
 				
-
-				for (int z3 = 0;z3 < tmp_sz1; ++z3){
+				// delete tmp graph
+				for (int z3 = 0;z3 < grh_sz; ++z3){
 					delete[] tmp[z3];
 				}			
 				delete[] tmp;
 			}
+			// if the graph is NULL no need to deal with tmp graph
 			else
 			{
-				graph = new int*[Vt.size()+1];
+				graph = new int*[Vt.size()+1] ();
 				for (int i1 = 0; i1 < Vt.size()+1; ++i1){
-					graph[i1] = new int[Vt.size()+1];
+					graph[i1] = new int[Vt.size()+1] ();
 				}				
 			}
+			////////////////////////////////////////////////////////
 			//std::cout << "debug" << std::endl;
 			graph[min_idx][Vt.size()] = 1;
-			tmp_sz1 = Vt.size()+1;
+			grh_sz = Vt.size()+1;
 			
 			
 			Vt.push_back(Points3D(q_new[0]._x,q_new[0]._y,q_new[0]._z));
@@ -1112,24 +1103,27 @@ std::vector<Points3D> motionPlanning::simpleRRT1(std::vector<Points3D> q0, std::
 			if ((distPointPoint(comp1,comp2) < step_size) && (std::abs(atan2(sin(q1[0]._z- q_new[0]._z), cos(q1[0]._z- q_new[0]._z)))< step_size_th) 
 			&& !contcollisionCheck(q_new,q1, n_sample))
 			{
-
+				// same deal as before: graph -> tmp, 
+				// expand graph
+				// tmp -> expaned graph
+				// delete tmp
 				int **tmp1 = graph;
-				graph = new int*[Vt.size()+1];
+				graph = new int*[Vt.size()+1] ();
 				for (int i1 = 0; i1 < Vt.size()+1; i1++){
-					graph[i1] = new int[Vt.size()+1];
+					graph[i1] = new int[Vt.size()+1] ();
 				}
-				for (int z1 = 0; z1 < tmp_sz1; z1++){
-					for (int z2 = 0; z2 < tmp_sz1; z2++){
+				for (int z1 = 0; z1 < grh_sz; z1++){
+					for (int z2 = 0; z2 < grh_sz; z2++){
 						graph[z1][z2] = tmp1[z1][z2];
 					}
 				}
-				for (int z3 = 0;z3 < tmp_sz1; z3++){
+				for (int z3 = 0;z3 < grh_sz; z3++){
 					delete[] tmp1[z3];
 				}			
 				delete[] tmp1;
 				
 				graph[Vt.size()-1][Vt.size()] = 1;
-				tmp_sz1 = Vt.size()+1;
+				grh_sz = Vt.size()+1;
 				Vt.push_back(Points3D(q1[0]._x,q1[0]._y,q1[0]._z));
 				true_exit = true;
 			}
@@ -1156,14 +1150,6 @@ std::vector<Points3D> motionPlanning::simpleRRT1(std::vector<Points3D> q0, std::
 		std::cout << "Collision-free path was found in RRT with " << i << " samples!" << std::endl;
 	}
 	
-	for (int i = 0; i < Vt.size(); i++){
-		for (int j = 0; j < Vt.size(); j++){
-			std::cout << graph[i][j] << " ";
-		}
-		std::cout << std::endl;
-	}
-
-	
 	// use Dijkstra's algorithm to find the shortest path on RRT
 	std::vector<int> path=dijkstra(graph, 0, Vt.size()-1,Vt.size());
 
@@ -1172,6 +1158,11 @@ std::vector<Points3D> motionPlanning::simpleRRT1(std::vector<Points3D> q0, std::
 	for (size_t i = 0 ; i < path.size(); i++){
 		Vt_new.push_back(Points3D(Vt[path[i]]._x, Vt[path[i]]._y, Vt[path[i]]._z));
 	}	
+
+	for (int z3 = 0;z3 < grh_sz; z3++){
+		delete[] graph[z3];
+	}			
+	delete[] graph;
 	
 	return Vt_new;	
 }
@@ -1193,26 +1184,11 @@ std::vector<Points5D> motionPlanning::simpleRRT2(std::vector<Points5D> q0, std::
     unsigned int max_iter = 30000;
     bool exit = false;
     int min_idx;
-	int **graph2;
-	graph2 = new int*[Vt.size()];
-	for (int i1= 0; i1 < Vt.size();++i1){
-		graph2[i1] = new int[Vt.size()];
-	}
-	for (int i2= 0; i2 < Vt.size();++i2){
-		for (int j1= 0; j1 < Vt.size();++j1){
-			graph2[i2][j1] = 0;
-		}
-	}	
+	int **graph = NULL;
+    int grh_sz = 0;
+
 	std::vector<Points5D> Vt_tmp;
 
-	// initialize RRT
-	/*
-	for (size_t i = 0; i< VERTEX; i++){
-		for (size_t j = 0; j< VERTEX; j++){
-			graph2[i][j]=0;
-		}
-	}
-	*/
 	
     bool true_exit = false;
 	size_t i = 0;
@@ -1336,8 +1312,50 @@ std::vector<Points5D> motionPlanning::simpleRRT2(std::vector<Points5D> q0, std::
 		// check continuous collision between q_new and the closest point on RRT
 		if (!contcollisionCheckYoubot(Vt_tmp,q_new,pos,pos,n_sample))
 		{
-			graph2[min_idx][Vt.size()] = 1;
 			
+			////////////////////////////////////////////////////////
+			if (!(graph == NULL))
+			{
+				//std::cout << "debug" << " " << tmp_sz1 << std::endl;
+				//tmp = graph;
+				
+				int **tmp = graph; // temporary place holder for previous graph
+				
+				// initialize new graph with expanded size
+				graph = new int*[Vt.size()+1] ();
+				
+				for (int i1 = 0; i1 < Vt.size()+1; i1++){
+					graph[i1] = new int[Vt.size()+1] ();
+				}
+				
+				// copy tmp -> graph
+				for (int z1 = 0; z1 < grh_sz; z1++){
+					for (int z2 = 0; z2 < grh_sz; z2++){
+						//std::cout << "debug" << std::endl;
+						graph[z1][z2] = tmp[z1][z2];
+					}
+				}
+				
+				// delete tmp graph
+				for (int z3 = 0;z3 < grh_sz; ++z3){
+					delete[] tmp[z3];
+				}			
+				delete[] tmp;
+			}
+			// if the graph is NULL no need to deal with tmp graph
+			else
+			{
+				graph = new int*[Vt.size()+1] ();
+				for (int i1 = 0; i1 < Vt.size()+1; ++i1){
+					graph[i1] = new int[Vt.size()+1] ();
+				}				
+			}
+			////////////////////////////////////////////////////////
+
+			
+			
+			graph[min_idx][Vt.size()] = 1;
+			grh_sz = Vt.size()+1;
 			Vt.push_back(Points5D(q_new[0]._q1,q_new[0]._q2,q_new[0]._q3,q_new[0]._q4,q_new[0]._q5));
 
 			// check if q_new is close enough to q1 (less than step_size)
@@ -1348,7 +1366,30 @@ std::vector<Points5D> motionPlanning::simpleRRT2(std::vector<Points5D> q0, std::
 			(std::abs(atan2(sin(q1[0]._q5- q_new[0]._q5), cos(q1[0]._q5- q_new[0]._q5)))< step_size)&&
 			!contcollisionCheckYoubot(q_new,q1,pos,pos,n_sample))
 			{
-				graph2[Vt.size()-1][Vt.size()] = 1;
+				
+				// same deal as before: graph -> tmp, 
+				// expand graph
+				// tmp -> expaned graph
+				// delete tmp
+				int **tmp1 = graph;
+				graph = new int*[Vt.size()+1] ();
+				for (int i1 = 0; i1 < Vt.size()+1; i1++){
+					graph[i1] = new int[Vt.size()+1] ();
+				}
+				for (int z1 = 0; z1 < grh_sz; z1++){
+					for (int z2 = 0; z2 < grh_sz; z2++){
+						graph[z1][z2] = tmp1[z1][z2];
+					}
+				}
+				for (int z3 = 0;z3 < grh_sz; z3++){
+					delete[] tmp1[z3];
+				}			
+				delete[] tmp1;
+
+
+				
+				graph[Vt.size()-1][Vt.size()] = 1;
+				grh_sz = Vt.size()+1;
 				Vt.push_back(Points5D(q1[0]._q1,q1[0]._q2,q1[0]._q3,q1[0]._q4,q1[0]._q5));
 				true_exit = true;
 			}
@@ -1382,13 +1423,18 @@ std::vector<Points5D> motionPlanning::simpleRRT2(std::vector<Points5D> q0, std::
 	std::cout << "finding the shortest path" << std::endl;
 
 	// use Dijkstra's algorithm to find the shortest path on RRT
-	std::vector<int> path=dijkstra(graph2, 0, Vt.size()-1,Vt.size());
-	delete[] graph2;
+	std::vector<int> path=dijkstra(graph, 0, Vt.size()-1,Vt.size());
 	std::vector<Points5D> Vt_new;
 	
 	for (size_t i = 0 ; i < path.size(); i++){
 		Vt_new.push_back(Points5D(Vt[path[i]]._q1, Vt[path[i]]._q2, Vt[path[i]]._q3, Vt[path[i]]._q4, Vt[path[i]]._q5));
-	}	
+	}
+	
+	for (int z3 = 0;z3 < grh_sz; z3++){
+		delete[] graph[z3];
+	}			
+	delete[] graph;	
+		
 	return Vt_new;	
 
 }

@@ -10,6 +10,8 @@ find_package(Boost REQUIRED system thread unit_test_framework)
 
 find_package(fcl REQUIRED)
 
+find_package(OpenCV REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
@@ -129,6 +131,7 @@ include_directories(
   ${FCL_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
   include
 )
 
@@ -155,6 +158,7 @@ target_link_libraries(rrt_youbot_node
   ${fcl_LIBRARIES}
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
+  ${OpenCV_LIBS}
 )
 
 #############

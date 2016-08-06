@@ -6,6 +6,10 @@ Description for the assignment: http://www-cvr.ai.uiuc.edu/~seth/Teaching/ece550
 
 Guidelines: https://sites.google.com/site/rosassignment3
 
+To install youBot packages, and robot controllers for ROS checkout this link below:
+
+https://sites.google.com/site/rosassignmentii/youbot
+
 The source code: ./src/rrt_youbot_node.cpp
 
 The launch file: ./launch/test_youbot.launch

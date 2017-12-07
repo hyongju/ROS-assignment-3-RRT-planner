@@ -150,13 +150,13 @@ class motionPlanning
 		trajectory_msgs::JointTrajectory traj;
 
 		// create a subscriber object;
-        ros::Subscriber sub;
+        	ros::Subscriber sub;
 		
 		// create a publisher object;	
-        ros::Publisher pub1, pub2, pub3;
+        	ros::Publisher pub1, pub2, pub3;
 
 		// create a transfor listener object
-        tf::TransformListener listener;
+        	tf::TransformListener listener;
 		
 		// pose of youbot's origin w.r.t. "odom" coordinate 
 		double tf_yb_origin_x, tf_yb_origin_y, tf_yb_origin_yaw;

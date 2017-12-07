@@ -1448,7 +1448,7 @@ bool motionPlanning::collisionCheckYoubot(double pos[], double th_r[])
 	fcl::collide(&co_yb_arm4, &co_obs_m4, col_request, col_result64);
 	record*=!col_result64.isCollision();
 
-//  arm 2 and arm 4
+	//  arm 2 and arm 4
 	fcl::collide(&co_yb_arm2, &co_yb_arm4, col_request, col_result_arm_2_4);
 	record*=!col_result_arm_2_4.isCollision();
 	return !record;	
